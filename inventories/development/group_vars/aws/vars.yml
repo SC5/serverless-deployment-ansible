@@ -1,0 +1,7 @@
+---
+stage: development
+region: eu-west-1
+
+service_version: "1.20170206.1-59c52e1"
+
+secret: my-secret # move to vault

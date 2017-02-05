@@ -1,0 +1,6 @@
+---
+project: serverless-ansible
+
+state: present
+
+artifacts_bucket: et-deployment-example-artifacts

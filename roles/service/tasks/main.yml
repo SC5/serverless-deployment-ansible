@@ -1,0 +1,58 @@
+---
+- set_fact:
+    service_name: example-service
+
+- set_fact:
+    artifact_path: "{{ service_name }}/{{ service_version }}"
+
+- name: ensure there is a files directory
+  file: path="{{ role_path }}/files" state=directory
+
+- name: ensure there is a files/service directory
+  file: path="{{ role_path }}/files/service" state=directory
+
+- name: ensure there is a templates directory
+  file: path="{{ role_path }}/templates" state=directory
+
+- name: create .tmp directory
+  file:
+    path: "{{ playbook_dir }}/.tmp/{{ service_version }}"
+    state: directory
+    mode: 0755
+
+- name: copy artifact from s3
+  s3:
+    bucket: "{{ artifacts_bucket }}"
+    object: "{{ service_name }}/{{ service_name }}-{{ service_version }}.tar.gz"
+    dest: "{{ playbook_dir }}/.tmp/{{service_name}}-{{ service_version }}.tar.gz"
+    mode: get
+
+- name: unarchive middleware artifact
+  unarchive:
+    src: "{{ playbook_dir }}/.tmp/{{ service_name }}-{{ service_version }}.tar.gz"
+    dest: "{{ playbook_dir }}/.tmp/{{ service_version }}"
+
+- name: copy middleware-service.json.j2 template
+  copy:
+    src: "{{ playbook_dir }}/.tmp/{{ service_version }}/.ansible/{{ service_name }}.json.j2"
+    dest: "{{ role_path }}/templates/{{ service_name }}.json.j2"
+
+- name: copy functions package
+  copy:
+    src: "{{ playbook_dir }}/.tmp/{{ service_version }}/.ansible/{{ service_name }}.zip"
+    dest: "{{ role_path }}/files/{{ service_name }}.zip"
+
+- name: remove .tmp directory
+  file:
+    path: "{{ playbook_dir }}/.tmp"
+    state: absent
+
+#- name: "create env specific templates {{ role_path }}"
+#  template: src={{ item }} dest={{ role_path }}/files/{{ (item | basename | splitext)[0] }}
+#  with_fileglob:
+#    - "{{ role_path }}/templates/middleware-infra.yml.j2"
+
+- name: "create env specific templates {{ role_path }}"
+  template: src={{ item }} dest={{ role_path }}/files/{{ (item | basename | splitext)[0] }}
+  with_fileglob:
+    - "{{ role_path }}/templates/{{ service_name }}.json.j2"
