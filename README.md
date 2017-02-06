@@ -73,7 +73,44 @@ Then copy the artifact to you artifact S3 bucket.
 [ADD PIPELINE SCRIPT]
 
 ```
-./scripts/create-artifact.sh -s example-service
+MAJOR_VERSION = "1"
+ARTIFACTS_BUCKET = "serverless-ansible-artifacts"
+SERVICE = "example-service"
+node {
+    stage('Checkout service repo') {
+        dir('project') {
+            git 'https://github.com/SC5/serverless-deployment-example-service.git'
+        }
+    }
+    
+    stage('Set version') {
+        dir('project') {
+            gitCommitShort = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
+            version = VersionNumber(projectStartDate: '2016-10-01', skipFailedBuilds: true, versionNumberString: '${BUILD_DATE_FORMATTED, "yyyyMMdd"}.${BUILDS_TODAY, X}-${gitCommitShort}', versionPrefix: "${MAJOR_VERSION}.")
+            currentVersion = "${version}" + "${gitCommitShort}"
+            
+        }
+    }
+    
+    stage('Build') {
+        dir('project') {
+            withEnv(["VERSION=${currentVersion}"]) {
+                sh "./scripts/create-artifact.sh -s ${SERVICE}"
+            }
+        }
+    }
+    
+    stage("Copy Artifact to S3") {
+        dir('artifacts') {
+            withEnv(["VERSION=${currentVersion}"]) {
+                sh "tar -zcf ${SERVICE}.${VERSION}.tar.gz -C ../project/.ansible ${SERVICE}.zip ${SERVICE}.json.j2"
+                withAWS {
+                   s3Upload(file:"${SERVICE}.${VERSION}.tar.gz", bucket:"${ARTIFACTS_BUCKET}", path:"${SERVICE}/${SERVICE}.${VERSION}.tar.gz")
+                }
+            }
+        }
+    }
+}
 ```
 
 
@@ -117,13 +154,11 @@ When using Jenkins on AWS EC2, the role of the instance needs to have permission
 ```
 node {
     stage('Checkout repository') {
-        git 'https://github.com/SC5/serverless-deployment-ansible-lite.git'
+        git 'https://github.com/laardee/serverless-deployment-ansible.git'
     }
-
     stage('Build Docker image') {
        sh "./scripts/build-docker.sh"
     }
-
     stage('Deploy') {
         sh './scripts/deploy-development.sh'
     }
