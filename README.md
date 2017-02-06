@@ -12,7 +12,6 @@ For small scale serverless projects there is also a lite version that builds and
 
 Docker is required for deploying the playbook or alternatively Ansible and all the dependencies defined in Dockerfile installed in you environment.
 
-[Jenkins setup instructions](https://github.com/laardee/jenkins-installation)
 
 ## Project Structure
 
@@ -22,6 +21,16 @@ Docker is required for deploying the playbook or alternatively Ansible and all t
   * `infra` role for infrastructure, vpc, database etc.
   * `service` role for Serverless service
 * `scripts` scripts that helps deployment
+
+## Setup Jenkins
+
+[Jenkins setup instructions](https://github.com/laardee/jenkins-installation)
+
+After installing Jenkins, following plugins are needed:
+
+* Pipeline: AWS Steps
+* Version Number Plug-In
+
 
 ## Deployment flow
 

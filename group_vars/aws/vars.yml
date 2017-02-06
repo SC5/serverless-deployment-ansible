@@ -3,4 +3,4 @@ project: serverless-ansible
 
 state: present
 
-artifacts_bucket: et-deployment-example-artifacts
+artifacts_bucket: serverless-ansible-artifacts
