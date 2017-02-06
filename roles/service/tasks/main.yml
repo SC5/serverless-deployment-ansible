@@ -8,9 +8,6 @@
 - name: ensure there is a files directory
   file: path="{{ role_path }}/files" state=directory
 
-- name: ensure there is a files/service directory
-  file: path="{{ role_path }}/files/service" state=directory
-
 - name: ensure there is a templates directory
   file: path="{{ role_path }}/templates" state=directory
 
@@ -34,12 +31,12 @@
 
 - name: copy middleware-service.json.j2 template
   copy:
-    src: "{{ playbook_dir }}/.tmp/{{ service_version }}/.ansible/{{ service_name }}.json.j2"
+    src: "{{ playbook_dir }}/.tmp/{{ service_version }}/{{ service_name }}.json.j2"
     dest: "{{ role_path }}/templates/{{ service_name }}.json.j2"
 
 - name: copy functions package
   copy:
-    src: "{{ playbook_dir }}/.tmp/{{ service_version }}/.ansible/{{ service_name }}.zip"
+    src: "{{ playbook_dir }}/.tmp/{{ service_version }}/{{ service_name }}.zip"
     dest: "{{ role_path }}/files/{{ service_name }}.zip"
 
 - name: remove .tmp directory
@@ -47,12 +44,55 @@
     path: "{{ playbook_dir }}/.tmp"
     state: absent
 
-#- name: "create env specific templates {{ role_path }}"
-#  template: src={{ item }} dest={{ role_path }}/files/{{ (item | basename | splitext)[0] }}
-#  with_fileglob:
-#    - "{{ role_path }}/templates/middleware-infra.yml.j2"
-
 - name: "create env specific templates {{ role_path }}"
   template: src={{ item }} dest={{ role_path }}/files/{{ (item | basename | splitext)[0] }}
   with_fileglob:
     - "{{ role_path }}/templates/{{ service_name }}.json.j2"
+
+- name: "upload {{ service_name }}.zip to {{ infra_stack.stack_outputs.ServerlessDeploymentBucketName }} bucket"
+  s3:
+    bucket: "{{ infra_stack.stack_outputs.ServerlessDeploymentBucketName }}"
+    object: "{{ artifact_path }}/{{ service_name }}.zip"
+    src: "{{ role_path }}/files/{{ service_name }}.zip"
+    mode: put
+    region: "{{ region }}"
+    overwrite: always
+    permission: private
+
+- name: "upload {{ service_name }}.json to {{ infra_stack.stack_outputs.ServerlessDeploymentBucketName }} bucket"
+  s3:
+    bucket: "{{ infra_stack.stack_outputs.ServerlessDeploymentBucketName }}"
+    object: "{{ artifact_path }}/{{ service_name }}.json"
+    src: "{{ role_path }}/files/{{ service_name }}.json"
+    mode: put
+    region: "{{ region }}"
+    overwrite: always
+    permission: private
+
+- name: "create {{ service_name }} service"
+  cloudformation:
+    stack_name: "{{ project }}-{{ stage }}-{{ service_name }}"
+    state: "{{ state }}"
+    region: "{{ region }}"
+    disable_rollback: false
+    template_parameters:
+      ServerlessDeploymentBucket: "{{ infra_stack.stack_outputs.ServerlessDeploymentBucketName }}"
+    template_url: "https://s3.amazonaws.com/{{ infra_stack.stack_outputs.ServerlessDeploymentBucketName }}/{{ artifact_path }}/{{ service_name }}.json"
+    tags:
+      Stack: "{{ project }}-{{ stage }}-{{ service_name }}"
+  register: service_stack
+
+- name: "remove {{ service_name }}.zip from files directory"
+  file:
+    path: "{{ role_path }}/files/{{ service_name }}.zip"
+    state: absent
+
+- name: "remove {{ service_name }}.json from files directory"
+  file:
+    path: "{{ role_path }}/files/{{ service_name }}.json"
+    state: absent
+
+- name: "remove {{ service_name }}.json.j2 from templates"
+  file:
+    path: "{{ role_path }}/templates/{{ service_name }}.json.j2"
+    state: absent

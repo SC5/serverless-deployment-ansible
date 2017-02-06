@@ -4,11 +4,11 @@
 
 - name: create infra stack
   cloudformation:
-    stack_name: "{{ project }}-infra-{{ env }}"
+    stack_name: "{{ project }}-infra-{{ stage }}"
     state: "{{ state }}"
     region: "{{ region }}"
     disable_rollback: false
     template: "{{ role_path }}/files/infra.yml"
     tags:
-      Stack: "{{ project }}-infra-{{ env }}"
+      Stack: "{{ project }}-infra-{{ stage }}"
   register: infra_stack
