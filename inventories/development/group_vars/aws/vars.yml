@@ -2,6 +2,6 @@
 stage: development
 region: us-west-1
 
-service_version: "1.20170206.3-799dcd4"
+service_version: "1.20170206.4-799dcd4"
 
 secret: my-secret-development # use ansible vault for real secrets

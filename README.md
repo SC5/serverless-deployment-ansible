@@ -1,4 +1,4 @@
-# Ansible Playbook for Ansible with Serverless
+# Serverless Ansible Playbook
 
 Example [Ansible](https://github.com/ansible/ansible) playbook for deploying [Serverless](https://github.com/serverless/serverless) service.
 
@@ -103,9 +103,9 @@ node {
     stage("Copy Artifact to S3") {
         dir('artifacts') {
             withEnv(["VERSION=${currentVersion}"]) {
-                sh "tar -zcf ${SERVICE}.${VERSION}.tar.gz -C ../project/.ansible ${SERVICE}.zip ${SERVICE}.json.j2"
+                sh "tar -zcf ${SERVICE}-${VERSION}.tar.gz -C ../project/.ansible ${SERVICE}.zip ${SERVICE}.json.j2"
                 withAWS {
-                   s3Upload(file:"${SERVICE}.${VERSION}.tar.gz", bucket:"${ARTIFACTS_BUCKET}", path:"${SERVICE}/${SERVICE}.${VERSION}.tar.gz")
+                   s3Upload(file:"${SERVICE}-${VERSION}.tar.gz", bucket:"${ARTIFACTS_BUCKET}", path:"${SERVICE}/${SERVICE}-${VERSION}.tar.gz")
                 }
             }
         }
