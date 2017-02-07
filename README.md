@@ -98,7 +98,7 @@ Following pipeline script will
 
 ```Groovy
 MAJOR_VERSION = "1"
-ARTIFACTS_BUCKET = "serverless-ansible-artifacts"
+ARTIFACTS_BUCKET = "my-artifacts-bucket"
 SERVICE = "example-service"
 node {
     stage('Checkout service repo') {

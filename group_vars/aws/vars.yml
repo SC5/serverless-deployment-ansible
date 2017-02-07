@@ -3,4 +3,4 @@ project: serverless-ansible
 
 state: present
 
-artifacts_bucket: serverless-ansible-artifacts
+artifacts_bucket: my-artifacts-bucket
