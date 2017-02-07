@@ -22,7 +22,7 @@ For small scale serverless projects there is also a lite version that builds and
 
 [Build](#build)
 
-[Deploy](#deploy)
+[Deployment](#deployment)
 
 
 ## Project Structure
