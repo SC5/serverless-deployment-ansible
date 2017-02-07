@@ -26,7 +26,7 @@ Docker is required for deploying the playbook or alternatively Ansible and all t
 
 [Jenkins setup instructions](https://github.com/laardee/jenkins-installation)
 
-After installing Jenkins, following plugins are needed:
+In addition to suggested plugins, install following plugins also:
 
 * Pipeline: AWS Steps
 * Version Number Plug-In
