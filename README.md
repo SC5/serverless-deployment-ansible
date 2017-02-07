@@ -1,4 +1,4 @@
-# Serverless Ansible Playbook
+# Ansible Playbook for Serverless Framework
 
 Example [Ansible](https://github.com/ansible/ansible) playbook for deploying [Serverless](https://github.com/serverless/serverless) service.
 
@@ -10,7 +10,19 @@ Benefits on using this approach:
 
 For small scale serverless projects there is also a lite version that builds and deploys Serverless service [serverless-deployment-ansible-lite](https://github.com/SC5/serverless-deployment-ansible-lite).
 
-Docker is required for deploying the playbook or alternatively Ansible and all the dependencies defined in Dockerfile installed in you environment.
+**Contents**
+
+[Project Structure](#project-structure)
+
+[Setup Local Environment](#setup-local-environment)
+
+[Setup Jenkins](#setup-jenkins)
+
+[Deployment Flow](#deployment-flow)
+
+[Build](#build)
+
+[Deploy](#deploy)
 
 
 ## Project Structure
@@ -22,15 +34,18 @@ Docker is required for deploying the playbook or alternatively Ansible and all t
   * `service` role for Serverless service
 * `scripts` scripts that helps deployment
 
+## Setup Local Environment
+
+If you are deploying from your local environment, [Docker](https://docs.docker.com/engine/installation/) is required for deploying the playbook or alternatively Ansible and all the dependencies defined in Dockerfile installed in you environment.
+
 ## Setup Jenkins
 
-[Jenkins setup instructions](https://github.com/laardee/jenkins-installation)
+When using jenkins for deployment, easiest way is to setup Jenkins into EC2 instance running in your AWS account. Here is quick and dirty instructions how to do that [Jenkins setup instructions](https://github.com/laardee/jenkins-installation)
 
 In addition to suggested plugins, install following plugins also:
 
 * Pipeline: AWS Steps
 * Version Number Plug-In
-
 
 ## Deployment flow
 
@@ -40,9 +55,13 @@ In addition to suggested plugins, install following plugins also:
 4. Extract and create environment specific CloudFormation templates
 5. Deploy stack to AWS
 
-## Build artifact
+## Build
 
-Create S3 bucket for artifacts. If you use same bucket for different artifacts, create the 
+Create S3 bucket for artifacts using AWS Console or aws-cli.
+
+```Bash
+aws s3api create-bucket --bucket my-artifacts-bucket --region us-east-1
+```
 
 ### Local environment
 
@@ -60,7 +79,7 @@ Following snippet will create package named e.g. `example-service-1.20170206.1-7
 * `1` is number of the build in build date (set with `-b`, optional, defaults to 1)
 * `799dcd4` is short hash from git
 
-```
+```Bash
 ./scripts/create-artifact.sh -p -s example-service
 ```
 
@@ -70,9 +89,14 @@ Then copy the artifact to you artifact S3 bucket.
 
 ### Jenkins
 
-[ADD PIPELINE SCRIPT]
+Following pipeline script will
 
-```
+1. checkouts the service from repository
+2. creates version tag
+3. builds service
+4. uploads artifact to S3 bucket
+
+```Groovy
 MAJOR_VERSION = "1"
 ARTIFACTS_BUCKET = "serverless-ansible-artifacts"
 SERVICE = "example-service"
@@ -113,8 +137,6 @@ node {
 }
 ```
 
-
-
 ## Deployment
 
 1. Define which service version is the one that is to be deployed, take the e.g. `1.20170206.1-799dcd4` part from artifact name created in build step and add it to `service_version: ` in `inventories/development/groups_vars/aws/vars.yml`. When you are ready to deploy service to production, modify the `vars.yml` in `inventories/production/groups_vars/aws/`.
@@ -125,14 +147,14 @@ node {
 
 First define the service name to `roles/service/tasks/main.yml`
 
-```
+```Yaml
 - set_fact:
     service_name: example-service
 ```
 
 When deploying from local environment AWS secrets needs to be passed to deployment container, for that e.g. `.deploy.sh` script in the project root with contents of
 
-```
+```Bash
 #!/usr/bin/env bash
 
 export AWS_ACCESS_KEY=my-access-key
@@ -151,7 +173,13 @@ might ease up the deployment flow.
 
 When using Jenkins on AWS EC2, the role of the instance needs to have permissions to deploy CloudFormation stacks, create S3 buckets, IAM Roles, Lambda and other services that are used in Serverless service.
 
-```
+Following pipeline script will
+
+1. checkout this repository
+2. build docker image for deployment
+3. deploy stacks to AWS
+
+```Groovy
 node {
     stage('Checkout repository') {
         git 'https://github.com/laardee/serverless-deployment-ansible.git'
