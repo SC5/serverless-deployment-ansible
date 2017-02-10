@@ -184,7 +184,7 @@ Following pipeline script will
 ```Groovy
 node {
     stage('Checkout repository') {
-        git 'https://github.com/laardee/serverless-deployment-ansible.git'
+        git 'https://github.com/SC5/serverless-deployment-ansible.git'
     }
     stage('Build Docker image') {
        sh "./scripts/build-docker.sh"
