@@ -169,7 +169,7 @@ might ease up the deployment flow.
 1. Build Dockerfile with `./scripts/build-docker.sh`
 2. Run `./.deploy.sh`
 
-To deploy certain version, use environmental variable `SERVICE_VERSION`. If version is not defined it fallbacks to latest version.
+To deploy certain version of the Serverless service, use environmental variable `SERVICE_VERSION`. If version is not defined it fallbacks to latest version.
 
 ### Jenkins
 
@@ -204,7 +204,7 @@ docker run -v $(pwd):/src -w /src serverless-deployment /bin/bash -c "\
 export SERVICE_VERSION=$SERVICE_VERSION && \
 ansible-playbook -vvvv --inventory-file inventories/development/inventory site.yml"
 
-[[ $? -eq 0 ]] || { echo "Build failed!" ; exit 1; }
+[[ $? -eq 0 ]] || { echo "Deployment failed!" ; exit 1; }
 ```
 
-To deploy certain version, use environmental variable `SERVICE_VERSION`, that can be defined in Jenkins parameterized job. If version is not defined it fallbacks to latest version.
+To deploy certain version of the Serverless service, use environmental variable `SERVICE_VERSION`, that can be defined in Jenkins parameterized job. If version is not defined it fallbacks to latest version.

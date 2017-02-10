@@ -8,4 +8,4 @@ export SERVICE_VERSION=$SERVICE_VERSION && \
 serverless config credentials --provider aws --key $AWS_ACCESS_KEY --secret $AWS_SECRET_KEY && \
 ansible-playbook -vvvv --inventory-file inventories/development/inventory site.yml"
 
-[[ $? -eq 0 ]] || { echo "Build failed!" ; exit 1; }
+[[ $? -eq 0 ]] || { echo "Deployment failed!" ; exit 1; }
