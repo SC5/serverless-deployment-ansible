@@ -49,6 +49,8 @@ In addition to suggested plugins, install following plugins also:
 
 ## Deployment flow
 
+![deployment flow](https://raw.githubusercontent.com/SC5/serverless-deployment-ansible/flow.png)
+
 1. Create artifact from the Serverless service that contains parameterized CloudFormation Jinja2 template and functions package
 2. Upload artifact to S3 (or Artifactory or other file system).
 3. Download artifact with Ansible
