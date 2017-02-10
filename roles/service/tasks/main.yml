@@ -23,7 +23,7 @@
     object: "{{ service_name }}/latest"
     dest: "{{ playbook_dir }}/.tmp/latest"
     mode: get
-    overwrite: different
+ #   overwrite: different
   when: service_version == ""
 
 - name: output latest
@@ -35,6 +35,10 @@
   set_fact:
     service_version: "{{ latest.stdout }}"
   when: service_version == ""
+
+- name: output service version
+  debug:
+    msg: "service_version {{ service_version }}"
 
 - set_fact:
     artifact_path: "{{ service_name }}/{{ service_version }}"
