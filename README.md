@@ -127,9 +127,11 @@ node {
     stage("Copy Artifact to S3") {
         dir('artifacts') {
             withEnv(["VERSION=${currentVersion}"]) {
+                sh "truncate latest --size 0 && echo ${currentVersion} > latest"
                 sh "tar -zcf ${SERVICE}-${VERSION}.tar.gz -C ../project/.ansible ${SERVICE}.zip ${SERVICE}.json.j2"
                 withAWS {
-                   s3Upload(file:"${SERVICE}-${VERSION}.tar.gz", bucket:"${ARTIFACTS_BUCKET}", path:"${SERVICE}/${SERVICE}-${VERSION}.tar.gz")
+                    s3Upload(file:"${SERVICE}-${VERSION}.tar.gz", bucket:"${ARTIFACTS_BUCKET}", path:"${SERVICE}/${SERVICE}-${VERSION}.tar.gz")
+                    s3Upload(file:"latest", bucket:"${ARTIFACTS_BUCKET}", path:"${SERVICE}/latest")
                 }
             }
         }
@@ -139,9 +141,7 @@ node {
 
 ## Deployment
 
-1. Define which service version is the one that is to be deployed, take the e.g. `1.20170206.1-799dcd4` part from artifact name created in build step and add it to `service_version: ` in `inventories/development/groups_vars/aws/vars.yml`. When you are ready to deploy service to production, modify the `vars.yml` in `inventories/production/groups_vars/aws/`.
-2. Define artifacts S3 bucket to `artifacts_bucket` variable in `group_vars/aws/vars.yml`, so that ansible knows where to download artifacts. 
-
+Define artifacts S3 bucket to `artifacts_bucket` variable in `group_vars/aws/vars.yml`, so that Ansible knows where to download artifacts.
 
 ### Local environment
 

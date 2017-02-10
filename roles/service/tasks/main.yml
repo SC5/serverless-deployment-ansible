@@ -3,7 +3,7 @@
     service_name: example-service
 
 - set_fact:
-    artifact_path: "{{ service_name }}/{{ service_version }}"
+    service_version: "{{ lookup('env', 'SERVICE_VERSION') }}"
 
 - name: ensure there is a files directory
   file: path="{{ role_path }}/files" state=directory
@@ -11,7 +11,35 @@
 - name: ensure there is a templates directory
   file: path="{{ role_path }}/templates" state=directory
 
-- name: create .tmp directory
+- name: ensure there is a .tmp directory
+  file:
+    path: "{{ playbook_dir }}/.tmp/"
+    state: directory
+    mode: 0755
+
+- name: copy latest from s3
+  s3:
+    bucket: "{{ artifacts_bucket }}"
+    object: "{{ service_name }}/latest"
+    dest: "{{ playbook_dir }}/.tmp/latest"
+    mode: get
+    overwrite: different
+  when: service_version == ""
+
+- name: output latest
+  command: "cat {{ playbook_dir }}/.tmp/latest"
+  register: latest
+  when: service_version == ""
+
+- name: set service version from latest
+  set_fact:
+    service_version: "{{ latest.stdout }}"
+  when: service_version == ""
+
+- set_fact:
+    artifact_path: "{{ service_name }}/{{ service_version }}"
+
+- name: "create .tmp/{{ service_version }} directory"
   file:
     path: "{{ playbook_dir }}/.tmp/{{ service_version }}"
     state: directory

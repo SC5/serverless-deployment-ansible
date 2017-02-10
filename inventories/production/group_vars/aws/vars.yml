@@ -2,6 +2,4 @@
 stage: production
 region: us-west-1
 
-service_version: "1.20170206.4-799dcd4"
-
 secret: my-secret-production # use ansible vault for real secrets

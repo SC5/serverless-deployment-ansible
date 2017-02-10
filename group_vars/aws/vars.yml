@@ -3,4 +3,4 @@ project: serverless-ansible
 
 state: present
 
-artifacts_bucket: my-artifacts-bucket
+artifacts_bucket: serverless-ansible-artifacts # change bucket name to match your artifacts bucket
