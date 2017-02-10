@@ -169,6 +169,8 @@ might ease up the deployment flow.
 1. Build Dockerfile with `./scripts/build-docker.sh`
 2. Run `./.deploy.sh`
 
+To deploy certain version, use environmental variable `SERVICE_VERSION`. If version is not defined it fallbacks to latest version.
+
 ### Jenkins
 
 When using Jenkins on AWS EC2, the role of the instance needs to have permissions to deploy CloudFormation stacks, create S3 buckets, IAM Roles, Lambda and other services that are used in Serverless service.
@@ -193,3 +195,16 @@ node {
 }
 ```
 
+The deploy script `./scripts/deploy-development.sh` in deployment repository executes Ansible in docker container.
+
+```Bash
+#!/usr/bin/env bash
+
+docker run -v $(pwd):/src -w /src serverless-deployment /bin/bash -c "\
+export SERVICE_VERSION=$SERVICE_VERSION && \
+ansible-playbook -vvvv --inventory-file inventories/development/inventory site.yml"
+
+[[ $? -eq 0 ]] || { echo "Build failed!" ; exit 1; }
+```
+
+To deploy certain version, use environmental variable `SERVICE_VERSION`, that can be defined in Jenkins parameterized job. If version is not defined it fallbacks to latest version.
